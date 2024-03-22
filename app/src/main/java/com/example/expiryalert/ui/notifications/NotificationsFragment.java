@@ -12,10 +12,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.expiryalert.ImageDAO;
 import com.example.expiryalert.R;
 import com.example.expiryalert.databinding.FragmentNotificationsBinding;
 
@@ -34,24 +32,24 @@ public class NotificationsFragment extends Fragment {
         imageView = binding.imageView;
         importImageButton = binding.importImageButton;
 
-        ImageDAO imageDAO = new ImageDAO(requireContext()); // Use requireContext() for the fragment's context
+//        ImageDAO imageDAO = new ImageDAO(requireContext()); // Use requireContext() for the fragment's context
 
         importImageButton.setOnClickListener(v -> showImagePickerDialog());
 
-        imageDAO.open();
+//        imageDAO.open();
 
         // Insert an example image into the database
         Bitmap exampleImage = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_background);
         if (exampleImage != null) {
-            imageDAO.insertImage(exampleImage);
+//            imageDAO.insertImage(exampleImage);
         }
 
         // Retrieve and display the image from the database
-        Bitmap retrievedImage = imageDAO.retrieveImage();
-        if (retrievedImage != null) {
-            imageView.setImageBitmap(retrievedImage);
-        }
-        imageDAO.close();
+//        Bitmap retrievedImage = imageDAO.retrieveImage();
+//        if (retrievedImage != null) {
+//            imageView.setImageBitmap(retrievedImage);
+//        }
+//        imageDAO.close();
 
         return root;
     }
