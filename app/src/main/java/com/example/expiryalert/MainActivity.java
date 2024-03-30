@@ -38,9 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView imageView;
 
-    FloatingActionButton mCreateRem;
     RecyclerView mRecyclerview;
-    MyAdapter mAdapter;
+    myAdapter mAdapter;
 
     CollectionReference remindersRef;
     ArrayList<Model> mDataList = new ArrayList<>(); // ArrayList to hold reminders
@@ -51,18 +50,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-                                                                                                    mRecyclerview = findViewById(R.id.recyclerView);
-                                                                                                    mRecyclerview.setLayoutManager(new LinearLayoutManager(this));
-                                                                                                    mAdapter = new MyAdapter(mDataList);
-                                                                                                    mRecyclerview.setAdapter(mAdapter);
-                                                                                                    mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);
-                                                                                                    mCreateRem.setOnClickListener(new View.OnClickListener() {
-                                                                                                        @Override
-                                                                                                        public void onClick(View view) {
-                                                                                                            Intent intent = new Intent(getApplicationContext(), ReminderActivity.class);
-                                                                                                            startActivity(intent);                                                              //Starts the new activity to add Reminders
-                                                                                                        }
-                                                                                                    });
+
 
 
         binding.navView.setSelectedItemId(R.id.navigation_home);
@@ -95,30 +83,30 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        loadRemindersFromFirebase();
+//        loadRemindersFromFirebase();
     }
 
-    private void loadRemindersFromFirebase() {
-        Query query = FirebaseDatabase.getInstance().getReference("reminders");
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mDataList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Model model = snapshot.getValue(Model.class);
-                    if (model != null) {
-                        mDataList.add(model);
-                    }
-                }
-                mAdapter.notifyDataSetChanged();
-            }
+//    private void loadRemindersFromFirebase() {
+//        Query query = FirebaseDatabase.getInstance().getReference("reminders");
+//        query.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                mDataList.clear();
+//                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+//                    Model model = snapshot.getValue(Model.class);
+//                    if (model != null) {
+//                        mDataList.add(model);
+//                    }
+//                }
+//                mAdapter.notifyDataSetChanged();
+//            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, "Failed to load reminders", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                Toast.makeText(MainActivity.this, "Failed to load reminders", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
 
     public void navigateToFragment(Fragment fragment, boolean addToBackStack) {
         FragmentManager fragmentManager = getSupportFragmentManager();

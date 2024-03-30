@@ -3,15 +3,16 @@ package com.example.expiryalert;
 //model class is used to set and get the data from the database
 
 public class Model {
-    String title, date, time;
+    String title, expDate, time, addDate;
+    private int id;
 
-    public Model() {
-    }
 
-    public Model(String title, String date, String time) {
+    public Model(String title, String expDate, String time, int id, String addDate) {
         this.title = title;
-        this.date = date;
+        this.expDate = expDate;
         this.time = time;
+        this.id = id;
+        this.addDate = addDate;
     }
 
     public String getTitle() {
@@ -22,12 +23,12 @@ public class Model {
         this.title = title;
     }
 
-    public String getDate() {
-        return date;
+    public String getExpDate() {
+        return expDate;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setExpDate(String expDate) {
+        this.expDate = expDate;
     }
 
     public String getTime() {
@@ -36,5 +37,21 @@ public class Model {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getAddDate() {
+        return addDate;
+    }
+
+    public void setAddDate(String addDate) {
+        this.addDate = addDate;
     }
 }

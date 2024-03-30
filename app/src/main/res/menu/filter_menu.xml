@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/sort_group">
+        <item
+            android:id="@+id/sortAZ"
+            android:title="Sort A-Z"/>
+        <item
+            android:id="@+id/sortZA"
+            android:title="Sort Z-A"/>
+        <item
+            android:id="@+id/sortExpDateAsc"
+            android:title="Expiration Date ↑"/>
+        <item
+            android:id="@+id/sortExpDateDesc"
+            android:title="Expiration Date ↓"/>
+        <item
+            android:id="@+id/sortAddDateAsc"
+            android:title="Adding Date ↑"/>
+        <item
+            android:id="@+id/sortAddDateDesc"
+            android:title="Adding Date ↓"/>
+    </group>
+</menu>
