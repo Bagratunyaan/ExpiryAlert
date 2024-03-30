@@ -28,6 +28,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
 
 import java.util.ArrayList;
 
@@ -39,8 +40,10 @@ public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton mCreateRem;
     RecyclerView mRecyclerview;
-    ArrayList<Model> mDataList = new ArrayList<>();
     MyAdapter mAdapter;
+
+    CollectionReference remindersRef;
+    ArrayList<Model> mDataList = new ArrayList<>(); // ArrayList to hold reminders
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

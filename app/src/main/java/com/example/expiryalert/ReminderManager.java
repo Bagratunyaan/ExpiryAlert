@@ -1,23 +1,23 @@
 package com.example.expiryalert;
-import android.content.Context;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ReminderManager {
-    private DatabaseReference remindersRef;
+    private CollectionReference remindersRef;
 
     public ReminderManager() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        remindersRef = database.getReference("reminders");
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        remindersRef = firestore.collection("reminders");
     }
 
     public void addReminder(String title, String date, String time) {
-        String key = remindersRef.push().getKey(); // Generating unique key for each reminder
+        String key = remindersRef.document().getId(); // Generating unique key for each reminder
         Reminder reminder = new Reminder(key, title, date, time);
-        remindersRef.child(key).setValue(reminder); // Adding reminder to Firebase
+        remindersRef.document(key).set(reminder); // Adding reminder to Firestore
     }
 
-    public DatabaseReference getRemindersRef() {
+    public CollectionReference getRemindersRef() {
         return remindersRef;
     }
 }

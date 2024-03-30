@@ -18,6 +18,8 @@ import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -30,7 +32,7 @@ public class ReminderActivity extends AppCompatActivity {
     Button mSubmitbtn, mDatebtn, mTimebtn;
     EditText mTitledit;
     String timeToNotify;
-    DatabaseReference remindersRef;
+    CollectionReference remindersRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +44,8 @@ public class ReminderActivity extends AppCompatActivity {
         mTimebtn = findViewById(R.id.btnTime);
         mSubmitbtn = findViewById(R.id.btnSubmit);
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        remindersRef = database.getReference("reminders");
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        remindersRef = firestore.collection("reminders");
 
         mTimebtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,9 +82,9 @@ public class ReminderActivity extends AppCompatActivity {
     }
 
     private void processInsert(String title, String date, String time) {
-        String key = remindersRef.push().getKey();
+        String key = remindersRef.document().getId();
         Reminder reminder = new Reminder(key, title, date, time);
-        remindersRef.child(key).setValue(reminder);
+        remindersRef.document(key).set(reminder);
 
         setAlarm(title, date, time);
 
