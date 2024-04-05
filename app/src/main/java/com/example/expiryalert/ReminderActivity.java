@@ -1,5 +1,6 @@
 package com.example.expiryalert;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlarmManager;
@@ -8,11 +9,13 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -27,9 +30,13 @@ import java.util.Date;
 //this class is to take the reminders from the user and inserts into the database
 public class ReminderActivity extends AppCompatActivity {
 
-    Button mSubmitbtn, mDatebtn, mTimebtn;
+    Button mSubmitbtn, mDatebtn, mTimebtn, mSelectImageBtn;
+    ImageView mImageView;
+    Uri selectedImageUri;
     EditText mTitledit;
     String timeTonotify;
+
+    private static final int PICK_IMAGE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +47,16 @@ public class ReminderActivity extends AppCompatActivity {
         mDatebtn = (Button) findViewById(R.id.btnDate);                                             //assigned all the material reference to get and set data
         mTimebtn = (Button) findViewById(R.id.btnTime);
         mSubmitbtn = (Button) findViewById(R.id.btnSubmit);
+        mImageView = findViewById(R.id.imageView);
+        mSelectImageBtn = findViewById(R.id.btnSelectImage);
+
+
+        mSelectImageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFileChooser();
+            }
+        });
 
 
         mTimebtn.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +70,7 @@ public class ReminderActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 selectDate();
-            }                                        //when we click on the choose date button it calls the select date method
+            }                                                                                        //when we click on the choose date button it calls the select date method
         });
 
         mSubmitbtn.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +94,25 @@ public class ReminderActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void openFileChooser() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            try {
+                mImageView.setImageURI(selectedImageUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

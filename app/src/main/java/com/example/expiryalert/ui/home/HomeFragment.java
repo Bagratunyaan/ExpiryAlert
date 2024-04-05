@@ -56,7 +56,7 @@ public class HomeFragment extends Fragment {
 
         mRecyclerview = (RecyclerView) root.findViewById(R.id.recyclerView);
         mRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
-        mCreateRem = (FloatingActionButton) root.findViewById(R.id.create_reminder);                     //Floating action button to change activity
+        mCreateRem = (FloatingActionButton) root.findViewById(R.id.create_reminder);                //Floating action button to change activity
         mCreateRem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -122,7 +122,7 @@ public class HomeFragment extends Fragment {
 //
 //    @Override
 //    public void onBackPressed() {
-//        getActivity().finish();                                                                                   //Makes the user to exit from the app
+//        getActivity().finish();                                                                   //Makes the user to exit from the app
 //        super.onBackPressed();
 //
 //    }
