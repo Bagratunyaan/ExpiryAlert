@@ -4,13 +4,18 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -20,6 +25,9 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,8 +43,10 @@ public class ReminderActivity extends AppCompatActivity {
     Uri selectedImageUri;
     EditText mTitledit;
     String timeTonotify;
+    String imagePath;
 
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int TAKE_PHOTO_REQUEST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +54,7 @@ public class ReminderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reminder);
 
         mTitledit = (EditText) findViewById(R.id.editTitle);
-        mDatebtn = (Button) findViewById(R.id.btnDate);                                             //assigned all the material reference to get and set data
+        mDatebtn = (Button) findViewById(R.id.btnDate);
         mTimebtn = (Button) findViewById(R.id.btnTime);
         mSubmitbtn = (Button) findViewById(R.id.btnSubmit);
         mImageView = findViewById(R.id.imageView);
@@ -62,7 +72,7 @@ public class ReminderActivity extends AppCompatActivity {
         mTimebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectTime();                                                                       //when we click on the choose time button it calls the select time method
+                selectTime();
             }
         });
 
@@ -70,20 +80,20 @@ public class ReminderActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 selectDate();
-            }                                                                                        //when we click on the choose date button it calls the select date method
+            }
         });
 
         mSubmitbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String title = mTitledit.getText().toString().trim();                               //access the data from the input field
-                String date = mDatebtn.getText().toString().trim();                                 //access the date from the choose date button
-                String time = mTimebtn.getText().toString().trim();                                 //access the time from the choose time button
+                String title = mTitledit.getText().toString().trim();
+                String date = mDatebtn.getText().toString().trim();
+                String time = mTimebtn.getText().toString().trim();
 
                 if (title.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Please Enter text", Toast.LENGTH_SHORT).show();   //shows the toast if input field is empty
+                    Toast.makeText(getApplicationContext(), "Please Enter text", Toast.LENGTH_SHORT).show();
                 } else {
-                    if (time.equals("time") || date.equals("date")) {                                               //shows toast if date and time are not selected
+                    if (time.equals("time") || date.equals("date")) {
                         Toast.makeText(getApplicationContext(), "Please select date and time", Toast.LENGTH_SHORT).show();
                     } else {
                         processinsert(title, date, time);
@@ -97,41 +107,97 @@ public class ReminderActivity extends AppCompatActivity {
     }
 
     private void openFileChooser() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose Action");
+        builder.setItems(new CharSequence[]{"Take Photo", "Choose from Gallery"},
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                startActivityForResult(takePicture, 2);
+                                break;
+                            case 1:
+                                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(pickPhoto, 1);
+                                break;
+                        }
+                    }
+                });
+        builder.show();
     }
 
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            selectedImageUri = data.getData();
-            try {
-                mImageView.setImageURI(selectedImageUri);
-            } catch (Exception e) {
-                e.printStackTrace();
+        if (resultCode == RESULT_OK) {
+            if (requestCode == TAKE_PHOTO_REQUEST && data != null) {
+                Bitmap photo = (Bitmap) data.getExtras().get("data");
+                mImageView.setImageBitmap(photo);
+                mImageView.setVisibility(View.VISIBLE);
+                mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                mImageView.setAdjustViewBounds(true);
+                saveImageToStorage(photo);
+            } else if (requestCode == PICK_IMAGE_REQUEST && data != null) {
+                selectedImageUri = data.getData();
+                try {
+                    mImageView.setImageURI(selectedImageUri);
+                    mImageView.setVisibility(View.VISIBLE);
+                    mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                    mImageView.setAdjustViewBounds(true);
+                    // Save the selected image's URI
+                    imagePath = selectedImageUri.toString();
+                    Log.d("ReminderActivity", "Image Path: " + imagePath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void saveImageToStorage(Bitmap bitmap) {
+        FileOutputStream outputStream = null;
+        try {
+            File file = new File(getExternalFilesDir(null), "reminder_image.jpg");
+            outputStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            imagePath = file.getAbsolutePath(); // Save the file path for later use
+            Log.d("ReminderActivity", "Image saved at: " + imagePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
 
+
+
     private void processinsert(String title, String date, String time) {
-        String result = new dbManager(this).addreminder(title, date, time);                  //inserts the title,date,time into sql lite database
-        setAlarm(title, date, time);                                                                //calls the set alarm method to set alarm
+        String result = new dbManager(this).addreminder(title, date, time);
+        setAlarm(title, date, time);
         mTitledit.setText("");
         Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
     }
 
-    private void selectTime() {                                                                     //this method performs the time picker task
+    private void selectTime() {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                timeTonotify = i + ":" + i1;                                                        //temp variable to store the time to set alarm
-                mTimebtn.setText(FormatTime(i, i1));                                                //sets the button text as selected time
+                timeTonotify = i + ":" + i1;
+                mTimebtn.setText(FormatTime(i, i1));
             }
         }, hour, minute, false);
         timePickerDialog.show();
@@ -217,7 +283,7 @@ public class ReminderActivity extends AppCompatActivity {
 
         Intent intentBack = new Intent(getApplicationContext(), MainActivity.class);                //this intent will be called once the setting alarm is complete
         intentBack.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intentBack);                                                                  //navigates from adding reminder activity to mainactivity
+        startActivity(intentBack);                                                                  //navigates from adding reminder activity to main activity
 
     }
 }

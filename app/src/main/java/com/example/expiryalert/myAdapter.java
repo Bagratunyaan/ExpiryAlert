@@ -1,46 +1,38 @@
 package com.example.expiryalert;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Filter;
+import android.widget.Filterable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
-    private ArrayList<Model> dataholder;
+public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> implements Filterable {
+    private List<Model> dataholder;
+    private List<Model> dataholderFull;
     private Context context;
 
-    public myAdapter(Context context, ArrayList<Model> dataholder) {
-        this.dataholder = dataholder;
+    public myAdapter(Context context, List<Model> dataholder) {
         this.context = context;
-
-        // Sort the reminders by days left
+        this.dataholder = dataholder;
+        this.dataholderFull = new ArrayList<>(dataholder);
         sortByExpDate();
     }
 
-//    private void sortRemindersByDaysLeft() {
-//        dataholder.sort(new Comparator<Model>() {
-//            @Override
-//            public int compare(Model o1, Model o2) {
-//                return o1.getExpDate().compareTo(o2.getExpDate());
-//            }
-//        });
-//        notifyDataSetChanged();
-//    }
-
-    // Sort the reminders by title alphabetically
     public void sortByTitle() {
         dataholder.sort(new Comparator<Model>() {
             @Override
@@ -61,7 +53,6 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
         notifyDataSetChanged();
     }
 
-    // Sort the reminders by expiration date
     public void sortByExpDate() {
         dataholder.sort(new Comparator<Model>() {
             @Override
@@ -82,7 +73,6 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
         notifyDataSetChanged();
     }
 
-    // Sort the reminders by adding date
     public void sortByAddDate() {
         dataholder.sort(new Comparator<Model>() {
             @Override
@@ -103,6 +93,10 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
         notifyDataSetChanged();
     }
 
+    public boolean isListEmpty() {
+        return getItemCount() == 0;
+    }
+
     @NonNull
     @Override
     public myviewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -117,8 +111,8 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
         holder.mExpDate.setText(model.getExpDate());
         holder.mTime.setText(model.getTime());
         holder.mDaysLeft.setText("Days Left: " + getDaysUntilReminder(model.getExpDate()));
+        holder.itemView.getContext().getApplicationContext().sendBroadcast(new Intent("DATA_SET_CHANGED"));
 
-        // Check if reminder is expired
         if (isReminderExpired(model.getExpDate())) {
             holder.mDaysLeft.setText("Expired");
         }
@@ -134,18 +128,17 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
             e.printStackTrace();
         }
 
-        // If reminder date is before current date, it's expired
         return reminderDateObject != null && reminderDateObject.before(currentDate);
     }
-
 
     @Override
     public int getItemCount() {
         return dataholder.size();
     }
 
+
     class myviewholder extends RecyclerView.ViewHolder {
-        TextView mTitle, mExpDate, mTime, mDaysLeft, mAddDate;
+        TextView mTitle, mExpDate, mTime, mDaysLeft;
         ImageButton btnDelete;
 
         public myviewholder(@NonNull View itemView) {
@@ -153,20 +146,19 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
             mTitle = itemView.findViewById(R.id.txtTitle);
             mExpDate = itemView.findViewById(R.id.txtDate);
             mTime = itemView.findViewById(R.id.txtTime);
-            btnDelete = itemView.findViewById(R.id.btnDelete);
+//            btnDelete = itemView.findViewById(R.id.btnDelete);
             mDaysLeft = itemView.findViewById(R.id.txtDaysLeft);
 
-
-            btnDelete.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    deleteItem(position);
-                }
-            });
+//            btnDelete.setOnClickListener(v -> {
+//                int position = getAdapterPosition();
+//                if (position != RecyclerView.NO_POSITION) {
+//                    deleteItem(position);
+//                }
+//            });
         }
     }
 
-    private void deleteItem(int position) {
+    public void deleteItem(int position) {
         int id = dataholder.get(position).getId();
         new dbManager(context).deleteReminder(id);
         dataholder.remove(position);
@@ -190,4 +182,40 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
 
         return -1; // Error occurred
     }
+
+    @Override
+    public Filter getFilter() {
+        return dataFilter;
+    }
+
+    private Filter dataFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Model> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(dataholderFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+
+                for (Model item : dataholderFull) {
+                    if (item.getTitle().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            dataholder.clear();
+            dataholder.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
 }
+

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/dialog_edit_reminder.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/editTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Title"
+        android:inputType="text" />
+
+    <Button
+        android:id="@+id/editExpDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Expiration Date"
+        android:padding="10dp"
+        android:background="?attr/selectableItemBackground"
+        android:text="Select Date"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:inputType="none" />
+
+    <Button
+        android:id="@+id/editTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Time"
+        android:padding="10dp"
+        android:background="?attr/selectableItemBackground"
+        android:text="Select Time"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:inputType="none" />
+</LinearLayout>

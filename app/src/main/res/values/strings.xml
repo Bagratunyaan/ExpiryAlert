@@ -22,4 +22,11 @@
     <string name="login">Login</string>
     <string name="search">Search</string>
     <string name="my_account">My Account</string>
+    <string name="no_results_found">No results found</string>
+    <string name="select_image">Select Image</string>
+    <string name="save">Save</string>
+    <string name="time">time</string>
+    <string name="date">date</string>
+    <string name="enter_product_name">Enter product name</string>
+    <string name="add_reminder_here">Add product</string>
 </resources>

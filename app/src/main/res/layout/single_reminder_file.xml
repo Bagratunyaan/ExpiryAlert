@@ -55,13 +55,13 @@
 
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/btnDelete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="delete_reminder"
-        android:src="@drawable/baseline_delete_outline_24"
-        android:layout_gravity="end" />
-    <!--        android:background="@android:color/transparent"-->
+<!--    <ImageButton-->
+<!--        android:id="@+id/btnDelete"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:contentDescription="delete_reminder"-->
+<!--        android:src="@drawable/baseline_delete_outline_24"-->
+<!--        android:layout_gravity="end" />-->
+<!--    &lt;!&ndash;        android:background="@android:color/transparent"&ndash;&gt;-->
 </LinearLayout>
 

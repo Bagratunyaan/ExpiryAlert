@@ -6,38 +6,72 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/petqaeli"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        />
+
+
     <SearchView
         android:id="@+id/searchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:queryHint="Search..."
+        android:layout_alignTop="@+id/petqaeli"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="10dp"
+        android:queryBackground="@android:color/transparent"
+        android:background="@drawable/search_bg"
         android:iconifiedByDefault="false"
-        android:layout_alignParentTop="true" />
+        android:queryHint="Search..." />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/searchView"/>
+        android:layout_below="@id/searchView"
+        android:layout_marginTop="10dp"
+        android:paddingTop="2.5dp"
+        android:paddingBottom="2.5dp"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp"
+        />
+
+    <TextView
+        android:id="@+id/noResultsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/no_results_found"
+        android:textSize="18sp"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/create_reminder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="30dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_gravity="bottom"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="50dp"
-        android:src="@drawable/baseline_add_24" />
+        android:src="@drawable/baseline_add_24"
+        android:backgroundTint="@color/purple"
+        app:borderWidth="0dp" />
 
     <ImageButton
         android:id="@+id/btnFilter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="41.5dp"
+        android:layout_marginEnd="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/petqaeli"
         android:src="@drawable/baseline_filter_alt_24"
-        android:background="@android:color/transparent"
-        android:layout_margin="10dp"
-        android:layout_alignParentEnd="true" />
+        android:background="@android:color/transparent" />
 
 </RelativeLayout>

@@ -10,7 +10,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -47,11 +51,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        EdgeToEdge.enable(this);
+
+//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+//            return insets;
+//        });
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
-
+        mRecyclerview = findViewById(R.id.recyclerView);
+        mRecyclerview.setLayoutManager(new LinearLayoutManager(this));
 
         binding.navView.setSelectedItemId(R.id.navigation_home);
         navigateToFragment(new HomeFragment(), true);
@@ -68,20 +81,18 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        int nightModeFlags = getApplicationContext()
-                .getResources()
-                .getConfiguration()
-                .uiMode & Configuration.UI_MODE_NIGHT_MASK;
-
-        switch (nightModeFlags) {
-            case Configuration.UI_MODE_NIGHT_YES:
-                getWindow().getDecorView().setSystemUiVisibility(0);
-                break;
-            case Configuration.UI_MODE_NIGHT_NO:
-                getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        }
-
-
+//        int nightModeFlags = getApplicationContext()
+//                .getResources()
+//                .getConfiguration()
+//                .uiMode & Configuration.UI_MODE_NIGHT_MASK;
+//
+//        switch (nightModeFlags) {
+//            case Configuration.UI_MODE_NIGHT_YES:
+//                getWindow().getDecorView().setSystemUiVisibility(0);
+//                break;
+//            case Configuration.UI_MODE_NIGHT_NO:
+//                getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+//        }
 
 //        loadRemindersFromFirebase();
     }
@@ -111,7 +122,14 @@ public class MainActivity extends AppCompatActivity {
     public void navigateToFragment(Fragment fragment, boolean addToBackStack) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // Set custom animations
+        fragmentTransaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out);
+
         fragmentTransaction.replace(R.id.nav_host_fragment_activity_main, fragment);
+        if (addToBackStack) {
+            fragmentTransaction.addToBackStack(null);
+        }
         fragmentTransaction.commit();
     }
 

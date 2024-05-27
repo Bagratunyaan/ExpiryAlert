@@ -4,11 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -19,10 +15,14 @@ public class SplashActivity extends AppCompatActivity {
 
         int secondsDelayed = 1;
         new Handler().postDelayed(new Runnable() {
+            @Override
             public void run() {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));             //after 500 milliseconds this block calls the mainActivity
+                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                startActivity(intent);
+                // Use fade in and zoom out animations
+//                overridePendingTransition(R.anim.fade_in, R.anim.zoom_out);
                 finish();
             }
-        }, secondsDelayed ); //secondsDelayed * 500
+        }, secondsDelayed * 1000); // Delay in milliseconds
     }
 }

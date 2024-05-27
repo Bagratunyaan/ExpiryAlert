@@ -25,8 +25,8 @@ public class dbManager extends SQLiteOpenHelper {
         String query = "CREATE TABLE tbl_reminder (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "title TEXT, " +
-                "expDate TEXT, " +  // Change the column name to expDate
-                "time TEXT, " +  // Add the new column addDate
+                "expDate TEXT, " +
+                "time TEXT, " +
                 "addDate TEXT)";
         db.execSQL(query);
     }
@@ -49,6 +49,16 @@ public class dbManager extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void updateReminder(int id, String title, String expDate, String time) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("title", title);
+        contentValues.put("expDate", expDate);
+        contentValues.put("time", time);
+        db.update("reminders", contentValues, "id = ?", new String[]{String.valueOf(id)});
+    }
+
+
     private void cancelNotification(Context context, int id) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(id);
@@ -59,8 +69,8 @@ public class dbManager extends SQLiteOpenHelper {
 
         ContentValues contentValues = new ContentValues();
         contentValues.put("title", title);
-        contentValues.put("expDate", expdate);  // Use the new column name expDate
-        contentValues.put("addDate", getCurrentDateTime()); // Set the current date and time
+        contentValues.put("expDate", expdate);
+        contentValues.put("addDate", getCurrentDateTime());
         contentValues.put("time", time);
 
         long result = database.insert("tbl_reminder", null, contentValues);
