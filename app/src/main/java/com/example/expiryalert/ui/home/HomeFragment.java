@@ -1,16 +1,25 @@
 package com.example.expiryalert.ui.home;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,12 +27,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -38,9 +50,16 @@ import com.example.expiryalert.dbManager;
 import com.example.expiryalert.myAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 
 public class HomeFragment extends Fragment {
 
@@ -51,6 +70,10 @@ public class HomeFragment extends Fragment {
     myAdapter adapter;
     ImageButton btnFilter;
     TextView noResultsTextView;
+
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int TAKE_PHOTO_REQUEST = 2;
+    private Uri imageUri;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -247,17 +270,23 @@ public class HomeFragment extends Fragment {
         View dialogView = inflater.inflate(R.layout.dialog_edit_reminder, null);
         builder.setView(dialogView);
 
-        // Get references to the dialog's input fields
         EditText editTitle = dialogView.findViewById(R.id.editTitle);
         Button editDateBtn = dialogView.findViewById(R.id.editExpDate);
         Button editTimeBtn = dialogView.findViewById(R.id.editTime);
         Button editImagePathBtn = dialogView.findViewById(R.id.editImagePath);
+        ImageView editImageView = dialogView.findViewById(R.id.editImageView);
 
         // Set current reminder details to the input fields
         editTitle.setText(reminder.getTitle());
-        editDateBtn.setText(reminder.getExpDate());
-        editTimeBtn.setText(reminder.getTime());
-        editImagePathBtn.setText(reminder.getImagePath());
+        editDateBtn.setText("Edit expiration date" + " (" + reminder.getExpDate() + ")");
+        editTimeBtn.setText("Edit time to notify" + " (" + reminder.getTime() + ")");
+//        editImagePathBtn.setText(reminder.getImagePath());
+
+        // Load current image
+        Bitmap bitmap = BitmapFactory.decodeFile(reminder.getImagePath());
+        if (bitmap != null) {
+            editImageView.setImageBitmap(bitmap);
+        }
 
         editDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -273,12 +302,12 @@ public class HomeFragment extends Fragment {
             }
         });
 
-//        editImagePathBtn.setOnclickListenner(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                openFileChooser();
-//            }
-//        });
+        editImagePathBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openFileChooser();
+            }
+        });
 
         builder.setTitle("Edit Reminder");
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -288,6 +317,11 @@ public class HomeFragment extends Fragment {
                 String newExpDate = editDateBtn.getText().toString();
                 String newTime = editTimeBtn.getText().toString();
                 String newImagePath = editImagePathBtn.getText().toString();
+
+                // If a new image was selected, save it to storage and update the path
+                if (imageUri != null) {
+                    newImagePath = saveImageToStorage(imageUri);
+                }
 
                 // Update the reminder in the database
                 dbManager db = new dbManager(getContext());
@@ -312,7 +346,101 @@ public class HomeFragment extends Fragment {
         dialog.show();
     }
 
+    private void openFileChooser() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Choose Action");
+        builder.setItems(new CharSequence[]{"Take Photo", "Choose from Gallery"},
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                if (takePicture.resolveActivity(requireActivity().getPackageManager()) != null) {
+                                    File photoFile = null;
+                                    try {
+                                        photoFile = createImageFile();
+                                    } catch (IOException ex) {
+                                        // Error occurred while creating the File
+                                        ex.printStackTrace();
+                                    }
+                                    // Continue only if the File was successfully created
+                                    if (photoFile != null) {
+                                        imageUri = FileProvider.getUriForFile(requireContext(),
+                                                "com.example.expiryalert.fileprovider",
+                                                photoFile);
+                                        takePicture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                                        startActivityForResult(takePicture, TAKE_PHOTO_REQUEST);
+                                    }
+                                }
+                                break;
+                            case 1:
+                                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                                startActivityForResult(pickPhoto, PICK_IMAGE_REQUEST);
+                                break;
+                        }
+                    }
+                });
+        builder.show();
+    }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == TAKE_PHOTO_REQUEST) {
+                // The photo was taken and saved to imageUri
+                Bitmap bitmap;
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+                    saveImageToStorage(bitmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else if (requestCode == PICK_IMAGE_REQUEST && data != null) {
+                imageUri = data.getData();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+                    saveImageToStorage(bitmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private String saveImageToStorage(Uri uri) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return saveImageToStorage(bitmap);
+    }
+
+    private String saveImageToStorage(Bitmap bitmap) {
+        FileOutputStream outputStream = null;
+        try {
+            String uuid = UUID.randomUUID().toString();
+            File file = new File(requireContext().getExternalFilesDir(null), uuid + ".jpg");
+            outputStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            return file.getAbsolutePath(); // Save the file path for later use
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     private void selectDate(Button editDateBtn) {
         Calendar calendar = Calendar.getInstance();
@@ -350,6 +478,22 @@ public class HomeFragment extends Fragment {
         } else {
             noResultsTextView.setVisibility(View.GONE);
         }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        imageUri = Uri.fromFile(image);
+        return image;
     }
 
     @Override
