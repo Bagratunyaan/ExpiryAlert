@@ -3,8 +3,6 @@ package com.example.expiryalert.ui.home;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -28,7 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,11 +38,8 @@ import com.example.expiryalert.dbManager;
 import com.example.expiryalert.myAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Objects;
 
 public class HomeFragment extends Fragment {
@@ -174,20 +168,22 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadReminders() {
-        Cursor cursor = new dbManager(getContext()).readallreminders();
+        Cursor cursor = new dbManager(getContext()).readAllReminders();
         while (cursor != null && cursor.moveToNext()) {
             int idIndex = cursor.getColumnIndexOrThrow("id");
             int titleIndex = cursor.getColumnIndexOrThrow("title");
             int expDateIndex = cursor.getColumnIndexOrThrow("expDate");
             int timeIndex = cursor.getColumnIndexOrThrow("time");
             int addDataIndex = cursor.getColumnIndexOrThrow("addDate");
+            int imagePathIndex = cursor.getColumnIndexOrThrow("imagePath");
 
             Model model = new Model(
                     cursor.getString(titleIndex),
                     cursor.getString(expDateIndex),
                     cursor.getString(timeIndex),
                     cursor.getInt(idIndex),
-                    cursor.getString(addDataIndex));
+                    cursor.getString(addDataIndex),
+                    cursor.getString(imagePathIndex));
             dataholder.add(model);
         }
     }
@@ -255,11 +251,13 @@ public class HomeFragment extends Fragment {
         EditText editTitle = dialogView.findViewById(R.id.editTitle);
         Button editDateBtn = dialogView.findViewById(R.id.editExpDate);
         Button editTimeBtn = dialogView.findViewById(R.id.editTime);
+        Button editImagePathBtn = dialogView.findViewById(R.id.editImagePath);
 
         // Set current reminder details to the input fields
         editTitle.setText(reminder.getTitle());
         editDateBtn.setText(reminder.getExpDate());
         editTimeBtn.setText(reminder.getTime());
+        editImagePathBtn.setText(reminder.getImagePath());
 
         editDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -275,6 +273,13 @@ public class HomeFragment extends Fragment {
             }
         });
 
+//        editImagePathBtn.setOnclickListenner(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                openFileChooser(editImagePathBtn);
+//            }
+//        });
+
         builder.setTitle("Edit Reminder");
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -282,15 +287,17 @@ public class HomeFragment extends Fragment {
                 String newTitle = editTitle.getText().toString();
                 String newExpDate = editDateBtn.getText().toString();
                 String newTime = editTimeBtn.getText().toString();
+                String newImagePath = editImagePathBtn.getText().toString();
 
                 // Update the reminder in the database
                 dbManager db = new dbManager(getContext());
-                db.updateReminder(reminder.getId(), newTitle, newExpDate, newTime);
+                db.updateReminder(reminder.getId(), newTitle, newExpDate, newTime, newImagePath);
 
                 // Update the reminder in the adapter and notify the change
                 reminder.setTitle(newTitle);
                 reminder.setExpDate(newExpDate);
                 reminder.setTime(newTime);
+                reminder.setImagePath(newImagePath);
                 adapter.notifyItemChanged(position);
             }
         });
@@ -304,6 +311,8 @@ public class HomeFragment extends Fragment {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+
 
     private void selectDate(Button editDateBtn) {
         Calendar calendar = Calendar.getInstance();

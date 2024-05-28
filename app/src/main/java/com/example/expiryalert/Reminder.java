@@ -5,16 +5,18 @@ public class Reminder {
     private String title;
     private String date;
     private String time;
+    private String imagePath;
+//
+//    public Reminder() {
+//        // Default constructor required for calls to DataSnapshot.getValue(Reminder.class)
+//    }
 
-    public Reminder() {
-        // Default constructor required for calls to DataSnapshot.getValue(Reminder.class)
-    }
-
-    public Reminder(String id, String title, String date, String time) {
+    public Reminder(String id, String title, String date, String time, String imagePath) {
         this.id = id;
         this.title = title;
         this.date = date;
         this.time = time;
+        this.imagePath = imagePath;
     }
 
     public String getId() {
@@ -47,6 +49,13 @@ public class Reminder {
 
     public void setTime(String time) {
         this.time = time;
+    }
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }
 

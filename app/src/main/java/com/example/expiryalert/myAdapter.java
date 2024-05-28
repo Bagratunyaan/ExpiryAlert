@@ -21,6 +21,29 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> implements Filterable {
     private List<Model> dataholder;
     private List<Model> dataholderFull;
@@ -34,62 +57,32 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
     }
 
     public void sortByTitle() {
-        dataholder.sort(new Comparator<Model>() {
-            @Override
-            public int compare(Model o1, Model o2) {
-                return o1.getTitle().compareToIgnoreCase(o2.getTitle());
-            }
-        });
+        dataholder.sort(Comparator.comparing(Model::getTitle, String::compareToIgnoreCase));
         notifyDataSetChanged();
     }
 
     public void sortByTitleDescending() {
-        dataholder.sort(new Comparator<Model>() {
-            @Override
-            public int compare(Model o1, Model o2) {
-                return o2.getTitle().compareToIgnoreCase(o1.getTitle());
-            }
-        });
+        dataholder.sort((o1, o2) -> o2.getTitle().compareToIgnoreCase(o1.getTitle()));
         notifyDataSetChanged();
     }
 
     public void sortByExpDate() {
-        dataholder.sort(new Comparator<Model>() {
-            @Override
-            public int compare(Model o1, Model o2) {
-                return o1.getExpDate().compareTo(o2.getExpDate());
-            }
-        });
+        dataholder.sort(Comparator.comparing(Model::getExpDate));
         notifyDataSetChanged();
     }
 
     public void sortByExpDateDescending() {
-        dataholder.sort(new Comparator<Model>() {
-            @Override
-            public int compare(Model o1, Model o2) {
-                return o2.getExpDate().compareTo(o1.getExpDate());
-            }
-        });
+        dataholder.sort((o1, o2) -> o2.getExpDate().compareTo(o1.getExpDate()));
         notifyDataSetChanged();
     }
 
     public void sortByAddDate() {
-        dataholder.sort(new Comparator<Model>() {
-            @Override
-            public int compare(Model o1, Model o2) {
-                return o1.getAddDate().compareTo(o2.getAddDate());
-            }
-        });
+        dataholder.sort(Comparator.comparing(Model::getAddDate));
         notifyDataSetChanged();
     }
 
     public void sortByAddDateDescending() {
-        dataholder.sort(new Comparator<Model>() {
-            @Override
-            public int compare(Model o1, Model o2) {
-                return o2.getAddDate().compareTo(o1.getAddDate());
-            }
-        });
+        dataholder.sort((o1, o2) -> o2.getAddDate().compareTo(o1.getAddDate()));
         notifyDataSetChanged();
     }
 
@@ -116,6 +109,13 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
         if (isReminderExpired(model.getExpDate())) {
             holder.mDaysLeft.setText("Expired");
         }
+
+        if (model.getImageBitmap() != null) {
+            holder.mImageView.setImageBitmap(model.getImageBitmap());
+        }
+//        else {
+//            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_READ_EXTERNAL_STORAGE);
+//        }
     }
 
     private boolean isReminderExpired(String reminderDate) {
@@ -136,25 +136,17 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
         return dataholder.size();
     }
 
-
     class myviewholder extends RecyclerView.ViewHolder {
         TextView mTitle, mExpDate, mTime, mDaysLeft;
-        ImageButton btnDelete;
+        ImageView mImageView;
 
         public myviewholder(@NonNull View itemView) {
             super(itemView);
             mTitle = itemView.findViewById(R.id.txtTitle);
             mExpDate = itemView.findViewById(R.id.txtDate);
             mTime = itemView.findViewById(R.id.txtTime);
-//            btnDelete = itemView.findViewById(R.id.btnDelete);
+            mImageView = itemView.findViewById(R.id.imageView);
             mDaysLeft = itemView.findViewById(R.id.txtDaysLeft);
-
-//            btnDelete.setOnClickListener(v -> {
-//                int position = getAdapterPosition();
-//                if (position != RecyclerView.NO_POSITION) {
-//                    deleteItem(position);
-//                }
-//            });
         }
     }
 
@@ -188,7 +180,7 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
         return dataFilter;
     }
 
-    private Filter dataFilter = new Filter() {
+    private final Filter dataFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             List<Model> filteredList = new ArrayList<>();
@@ -218,4 +210,5 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
         }
     };
 }
+
 

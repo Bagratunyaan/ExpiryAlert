@@ -18,7 +18,6 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TimePicker;
@@ -58,7 +57,7 @@ public class ReminderActivity extends AppCompatActivity {
         mTimebtn = (Button) findViewById(R.id.btnTime);
         mSubmitbtn = (Button) findViewById(R.id.btnSubmit);
         mImageView = findViewById(R.id.imageView);
-        mSelectImageBtn = findViewById(R.id.btnSelectImage);
+        mSelectImageBtn = (Button) findViewById(R.id.btnSelectImage);
 
 
         mSelectImageBtn.setOnClickListener(new View.OnClickListener() {
@@ -89,6 +88,7 @@ public class ReminderActivity extends AppCompatActivity {
                 String title = mTitledit.getText().toString().trim();
                 String date = mDatebtn.getText().toString().trim();
                 String time = mTimebtn.getText().toString().trim();
+                String imagePath = mSelectImageBtn.getText().toString().trim();
 
                 if (title.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Please Enter text", Toast.LENGTH_SHORT).show();
@@ -96,7 +96,7 @@ public class ReminderActivity extends AppCompatActivity {
                     if (time.equals("time") || date.equals("date")) {
                         Toast.makeText(getApplicationContext(), "Please select date and time", Toast.LENGTH_SHORT).show();
                     } else {
-                        processinsert(title, date, time);
+                        processinsert(title, date, time, imagePath);
 
                     }
                 }
@@ -182,8 +182,8 @@ public class ReminderActivity extends AppCompatActivity {
 
 
 
-    private void processinsert(String title, String date, String time) {
-        String result = new dbManager(this).addreminder(title, date, time);
+    private void processinsert(String title, String date, String time, String imagePath) {
+        String result = new dbManager(this).addReminder(title, date, time, imagePath);
         setAlarm(title, date, time);
         mTitledit.setText("");
         Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();

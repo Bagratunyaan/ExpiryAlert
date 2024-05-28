@@ -1,6 +1,5 @@
 package com.example.expiryalert;
 
-import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,7 +13,7 @@ import java.util.Date;
 
 public class dbManager extends SQLiteOpenHelper {
     private static final String DB_NAME = "reminder";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;  // Incremented database version to 3
 
     public dbManager(@Nullable Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -27,51 +26,49 @@ public class dbManager extends SQLiteOpenHelper {
                 "title TEXT, " +
                 "expDate TEXT, " +
                 "time TEXT, " +
-                "addDate TEXT)";
+                "addDate TEXT, " +
+                "imagePath TEXT)";  // Added imagePath column
         db.execSQL(query);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) {
-            // Perform the necessary migration if upgrading from version 1 to version 2
             db.execSQL("ALTER TABLE tbl_reminder RENAME TO temp_tbl_reminder");
             onCreate(db);
-            db.execSQL("INSERT INTO tbl_reminder (id, title, expDate, time) SELECT id, title, date, time FROM temp_tbl_reminder");
+            db.execSQL("INSERT INTO tbl_reminder (id, title, expDate, time, addDate) SELECT id, title, date, time, addDate FROM temp_tbl_reminder");
             db.execSQL("DROP TABLE temp_tbl_reminder");
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE tbl_reminder ADD COLUMN imagePath TEXT");  // Add the new column
         }
     }
 
     public void deleteReminder(int id) {
-//        cancelNotification(context, id);
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete("tbl_reminder", "id=?", new String[]{String.valueOf(id)});
         db.close();
     }
 
-    public void updateReminder(int id, String title, String expDate, String time) {
+    public void updateReminder(int id, String title, String expDate, String time, String imagePath) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put("title", title);
         contentValues.put("expDate", expDate);
         contentValues.put("time", time);
-        db.update("reminders", contentValues, "id = ?", new String[]{String.valueOf(id)});
+        contentValues.put("imagePath", imagePath);  // Update the imagePath
+        db.update("tbl_reminder", contentValues, "id = ?", new String[]{String.valueOf(id)});
     }
 
-
-    private void cancelNotification(Context context, int id) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(id);
-    }
-
-    public String addreminder(String title, String expdate, String time) {
+    public String addReminder(String title, String expDate, String time, String imagePath) {
         SQLiteDatabase database = this.getWritableDatabase();
 
         ContentValues contentValues = new ContentValues();
         contentValues.put("title", title);
-        contentValues.put("expDate", expdate);
+        contentValues.put("expDate", expDate);
         contentValues.put("addDate", getCurrentDateTime());
         contentValues.put("time", time);
+        contentValues.put("imagePath", imagePath);  // Add the imagePath
 
         long result = database.insert("tbl_reminder", null, contentValues);
 
@@ -82,7 +79,7 @@ public class dbManager extends SQLiteOpenHelper {
         }
     }
 
-    public Cursor readallreminders() {
+    public Cursor readAllReminders() {
         SQLiteDatabase database = this.getReadableDatabase();
         String query = "SELECT * FROM tbl_reminder ORDER BY id DESC";
         return database.rawQuery(query, null);
@@ -95,3 +92,4 @@ public class dbManager extends SQLiteOpenHelper {
         return dateFormat.format(currentDate);
     }
 }
+

@@ -36,7 +36,25 @@ import com.google.firebase.firestore.CollectionReference;
 
 import java.util.ArrayList;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_CODE_READ_EXTERNAL_STORAGE = 1;
     private BottomNavigationView bottomNavigationView;
     private ActivityMainBinding binding;
 
@@ -53,12 +71,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         EdgeToEdge.enable(this);
-
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -81,43 +93,42 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-//        int nightModeFlags = getApplicationContext()
-//                .getResources()
-//                .getConfiguration()
-//                .uiMode & Configuration.UI_MODE_NIGHT_MASK;
-//
-//        switch (nightModeFlags) {
-//            case Configuration.UI_MODE_NIGHT_YES:
-//                getWindow().getDecorView().setSystemUiVisibility(0);
-//                break;
-//            case Configuration.UI_MODE_NIGHT_NO:
-//                getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-//        }
-
-//        loadRemindersFromFirebase();
+        checkAndRequestPermissions();
     }
 
-//    private void loadRemindersFromFirebase() {
-//        Query query = FirebaseDatabase.getInstance().getReference("reminders");
-//        query.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                mDataList.clear();
-//                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-//                    Model model = snapshot.getValue(Model.class);
-//                    if (model != null) {
-//                        mDataList.add(model);
-//                    }
-//                }
-//                mAdapter.notifyDataSetChanged();
-//            }
+    private void checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
 
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                Toast.makeText(MainActivity.this, "Failed to load reminders", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//    }
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_READ_EXTERNAL_STORAGE);
+        } else {
+            // Permission has already been granted
+            Toast.makeText(this, "READ_EXTERNAL_STORAGE permission granted", Toast.LENGTH_SHORT).show();
+            // You can now access external storage
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_READ_EXTERNAL_STORAGE) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted
+                Toast.makeText(this, "READ_EXTERNAL_STORAGE permission granted", Toast.LENGTH_SHORT).show();
+                // You can now access external storage
+            } else {
+                // Permission denied
+                Toast.makeText(this, "READ_EXTERNAL_STORAGE permission denied", Toast.LENGTH_SHORT).show();
+                // Handle the case when permission is denied
+            }
+        }
+    }
 
     public void navigateToFragment(Fragment fragment, boolean addToBackStack) {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -143,3 +154,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+
