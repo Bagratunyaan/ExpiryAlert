@@ -2,6 +2,8 @@ package com.example.expiryalert;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.transition.Transition;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.ParseException;
@@ -35,6 +38,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -110,12 +116,11 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
             holder.mDaysLeft.setText("Expired");
         }
 
-        if (model.getImageBitmap() != null) {
-            holder.mImageView.setImageBitmap(model.getImageBitmap());
+        if (model.getImagePath() != null) {
+            Glide.with(context)
+                    .load(model.getImagePath())
+                    .into(holder.mImageView);
         }
-//        else {
-//            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_READ_EXTERNAL_STORAGE);
-//        }
     }
 
     private boolean isReminderExpired(String reminderDate) {

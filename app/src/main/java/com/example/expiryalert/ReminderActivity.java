@@ -32,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 
 //this class is to take the reminders from the user and inserts into the database
@@ -88,7 +89,7 @@ public class ReminderActivity extends AppCompatActivity {
                 String title = mTitledit.getText().toString().trim();
                 String date = mDatebtn.getText().toString().trim();
                 String time = mTimebtn.getText().toString().trim();
-                String imagePath = mSelectImageBtn.getText().toString().trim();
+//                String imagePath = mSelectImageBtn.getText().toString().trim();
 
                 if (title.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Please Enter text", Toast.LENGTH_SHORT).show();
@@ -161,7 +162,8 @@ public class ReminderActivity extends AppCompatActivity {
     private void saveImageToStorage(Bitmap bitmap) {
         FileOutputStream outputStream = null;
         try {
-            File file = new File(getExternalFilesDir(null), "reminder_image.jpg");
+            String uuid = UUID.randomUUID().toString();
+            File file = new File(getExternalFilesDir(null), uuid + ".jpg");
             outputStream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             imagePath = file.getAbsolutePath(); // Save the file path for later use

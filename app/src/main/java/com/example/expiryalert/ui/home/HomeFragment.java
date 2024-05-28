@@ -276,7 +276,7 @@ public class HomeFragment extends Fragment {
 //        editImagePathBtn.setOnclickListenner(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                openFileChooser(editImagePathBtn);
+//                openFileChooser();
 //            }
 //        });
 
