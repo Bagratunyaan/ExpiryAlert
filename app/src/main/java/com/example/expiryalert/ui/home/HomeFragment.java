@@ -2,6 +2,8 @@ package com.example.expiryalert.ui.home;
 
 import static android.app.Activity.RESULT_OK;
 
+import static java.util.Locale.filter;
+
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -57,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
@@ -85,12 +88,14 @@ public class HomeFragment extends Fragment {
 
         btnFilter = root.findViewById(R.id.btnFilter);
         noResultsTextView = root.findViewById(R.id.noResultsTextView);
-        mRecyclerview = root.findViewById(R.id.recyclerView);
+        mRecyclerview =  root.findViewById(R.id.recyclerView);
         mCreateRem = root.findViewById(R.id.create_reminder);
 
         mRecyclerview.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new myAdapter(getActivity(), dataholder);
         mRecyclerview.setAdapter(adapter);
+        loadReminders();
+        checkIfNoResults();
 
         btnFilter.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,29 +112,31 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        loadReminders();
 
-        SearchView searchView = root.findViewById(R.id.searchView);
+        SearchView searchView = root.findViewById(R.id.searchView); // Initialize the SearchView
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                filter(query);
+                checkIfNoResults();
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
+//                adapter.getFilter().filter(newText);
+                filter(newText);
                 if (newText.isEmpty()) {
                     btnFilter.setVisibility(View.VISIBLE);
                     checkIfNoResults();
                 } else {
                     btnFilter.setVisibility(View.GONE);
-                    noResultsTextView.setVisibility(View.GONE);
+                    checkIfNoResults();
+//                    noResultsTextView.setVisibility(View.GONE);
                 }
                 return true;
             }
         });
-
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             private final ColorDrawable background = new ColorDrawable(Color.rgb(255, 32, 78));
             private final Drawable deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.baseline_delete_outline_24);
@@ -286,6 +293,8 @@ public class HomeFragment extends Fragment {
         Bitmap bitmap = BitmapFactory.decodeFile(reminder.getImagePath());
         if (bitmap != null) {
             editImageView.setImageBitmap(bitmap);
+        } else {
+            editImageView.setImageResource(R.drawable.placeholder_image);
         }
 
         editDateBtn.setOnClickListener(new View.OnClickListener() {
@@ -494,6 +503,16 @@ public class HomeFragment extends Fragment {
         // Save a file: path for use with ACTION_VIEW intents
         imageUri = Uri.fromFile(image);
         return image;
+    }
+
+    private void filter(String text) {
+        List<Model> filteredList = new ArrayList<>();
+        for (Model item : dataholder) {
+            if (item.getTitle().toLowerCase().contains(text.toLowerCase())) {
+                filteredList.add(item);
+            }
+        }
+        adapter.filterList(filteredList);
     }
 
     @Override

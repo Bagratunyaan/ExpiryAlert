@@ -120,6 +120,8 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
             Glide.with(context)
                     .load(model.getImagePath())
                     .into(holder.mImageView);
+        } else {
+            holder.mImageView.setImageResource(R.drawable.placeholder_image);
         }
     }
 
@@ -139,6 +141,11 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
     @Override
     public int getItemCount() {
         return dataholder.size();
+    }
+
+    public void filterList(List<Model> filteredList) {
+        dataholder = filteredList;
+        notifyDataSetChanged();
     }
 
     class myviewholder extends RecyclerView.ViewHolder {
@@ -215,5 +222,3 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> impl
         }
     };
 }
-
-

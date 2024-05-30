@@ -112,7 +112,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/password"
         app:layout_constraintVertical_bias="0.2"
-        android:backgroundTint="#9042D8"/>
+        android:backgroundTint="@color/purple"/>
+
+    <Button
+        android:id="@+id/register_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Register"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/login"
+        android:backgroundTint="@color/purple"/>
+
 
 
     <!--    <ProgressBar-->

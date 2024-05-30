@@ -9,7 +9,6 @@
         android:id="@+id/editImageView"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_marginTop="100dp"
         android:contentDescription="Selected Image"
         android:scaleType="centerCrop"
         android:background="#E0E0E0" />
@@ -18,7 +17,7 @@
         android:id="@+id/editTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Title"
+        android:hint="@string/product_s_name"
         android:inputType="text"
         android:padding="8dp" />
 
@@ -26,7 +25,9 @@
         android:id="@+id/editExpDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Expiration Date"
+        android:text="@string/expiration_date"
+        android:backgroundTint="@color/purple"
+        android:textColor="@color/white"
         android:padding="8dp"
         android:layout_marginTop="8dp" />
 
@@ -34,7 +35,9 @@
         android:id="@+id/editTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Time"
+        android:text="@string/time_to_notify"
+        android:backgroundTint="@color/purple"
+        android:textColor="@color/white"
         android:padding="8dp"
         android:layout_marginTop="8dp" />
 
@@ -42,7 +45,9 @@
         android:id="@+id/editImagePath"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Change Image"
+        android:text="@string/change_image"
+        android:backgroundTint="@color/purple"
+        android:textColor="@color/white"
         android:padding="8dp"
         android:layout_marginTop="8dp" />
 

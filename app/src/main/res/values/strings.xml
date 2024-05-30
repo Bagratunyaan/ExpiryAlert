@@ -29,4 +29,11 @@
     <string name="date">date</string>
     <string name="enter_product_name">Enter product name</string>
     <string name="add_reminder_here">Add product</string>
+    <string name="change_language">change language</string>
+    <string name="enter_product_s_name">Enter product\'s name</string>
+    <string name="add_product_and_set_reminder">Add product and set reminder</string>
+    <string name="change_image">Change Image</string>
+    <string name="expiration_date">Expiration Date</string>
+    <string name="product_s_name">Product\'s name</string>
+    <string name="time_to_notify">Time to notify</string>
 </resources>
