@@ -1,6 +1,5 @@
 package com.example.expiryalert.ui.login;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -9,7 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,8 +42,6 @@ public class LoginActivity extends AppCompatActivity {
 
         loginButton = findViewById(R.id.login);
         registerButton = findViewById(R.id.register_button);
-        // If loadingProgressBar is uncommented in XML, then uncomment below line
-        // loadingProgressBar = findViewById(R.id.loading);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,12 +54,12 @@ public class LoginActivity extends AppCompatActivity {
         TextWatcher afterTextChangedListener = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // ignore
+
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // ignore
+
             }
 
             @Override
@@ -75,8 +71,6 @@ public class LoginActivity extends AppCompatActivity {
         usernameEditText.addTextChangedListener(afterTextChangedListener);
         passwordEditText.addTextChangedListener(afterTextChangedListener);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,24 +80,25 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser(String email, String password) {
-        // Uncomment below line if ProgressBar is used in XML
-        // loadingProgressBar.setVisibility(View.VISIBLE);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        // Uncomment below line if ProgressBar is used in XML
-                        // loadingProgressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            if (user != null && user.isEmailVerified()) {
+                                updateUI(user);
+                            } else {
+                                Toast.makeText(LoginActivity.this, "Please verify your email.", Toast.LENGTH_SHORT).show();
+                                mAuth.signOut();
+                            }
                         } else {
                             Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
-                            updateUI(null);
                         }
                     }
                 });
     }
+
 
     private void loginDataChanged() {
         if (!isUserNameValid(usernameEditText.getText().toString())) {
@@ -126,7 +121,6 @@ public class LoginActivity extends AppCompatActivity {
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             Toast.makeText(LoginActivity.this, "Login successful.", Toast.LENGTH_SHORT).show();
-            // Pass user data to ProfileFragment using newInstance
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
@@ -135,5 +129,3 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 }
-
-

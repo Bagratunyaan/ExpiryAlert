@@ -1,6 +1,5 @@
 package com.example.expiryalert.ui.login;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -40,26 +39,23 @@ public class RegisterActivity extends AppCompatActivity {
         passwordEditText = passwordInputLayout.getEditText();
 
         registerButton = findViewById(R.id.register);
-        // If loadingProgressBar is uncommented in XML, then uncomment below line
-        // loadingProgressBar = findViewById(R.id.loading);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 registerUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
-                loginUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
         });
 
         TextWatcher afterTextChangedListener = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // ignore
+
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // ignore
+
             }
 
             @Override
@@ -71,45 +67,40 @@ public class RegisterActivity extends AppCompatActivity {
         passwordEditText.addTextChangedListener(afterTextChangedListener);
     }
 
-    private void loginUser(String email, String password) {
-        // Uncomment below line if ProgressBar is used in XML
-        // loadingProgressBar.setVisibility(View.VISIBLE);
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        // Uncomment below line if ProgressBar is used in XML
-                        // loadingProgressBar.setVisibility(View.GONE);
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
-                        } else {
-//                            Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
-                            updateUI(null);
-                        }
-                    }
-                });
-    }
-
     private void registerUser(String email, String password) {
-        // Uncomment below line if ProgressBar is used in XML
-        // loadingProgressBar.setVisibility(View.VISIBLE);
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        // Uncomment below line if ProgressBar is used in XML
-                        // loadingProgressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            if (user != null) {
+                                sendVerificationEmail();
+                            }
                         } else {
                             Toast.makeText(RegisterActivity.this, "Registration failed.", Toast.LENGTH_SHORT).show();
-                            updateUI(null);
                         }
                     }
                 });
-
+    }
+    private void sendVerificationEmail() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            user.sendEmailVerification()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(RegisterActivity.this, "Verification email sent", Toast.LENGTH_SHORT).show();
+                                mAuth.signOut();
+                                startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                finish();
+                            } else {
+                                Toast.makeText(RegisterActivity.this, "Failed to send verification email", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }
     }
 
     private void loginDataChanged() {
@@ -129,14 +120,13 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean isPasswordValid(String password) {
         return password != null && password.trim().length() > 5;
     }
+
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             Toast.makeText(RegisterActivity.this, "Registration successful.", Toast.LENGTH_SHORT).show();
-            // Navigate to the next activity or return to login
             Intent intent = new Intent(RegisterActivity.this, ProfileFragment.class);
             startActivity(intent);
             finish();
         }
     }
 }
-

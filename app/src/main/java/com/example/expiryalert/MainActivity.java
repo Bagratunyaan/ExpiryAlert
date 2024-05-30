@@ -1,11 +1,13 @@
 package com.example.expiryalert;
 
+import android.app.AlertDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -61,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerview = findViewById(R.id.recyclerView);
         mRecyclerview.setLayoutManager(new LinearLayoutManager(this));
         bottomNavigationView = findViewById(R.id.nav_view);
-//        bottomNavigationView.setBackgroundColor(Color.rgb(100, 100, 100));
 
         binding.navView.setSelectedItemId(R.id.navigation_home);
         navigateToFragment(new HomeFragment(), true);
@@ -97,34 +98,57 @@ public class MainActivity extends AppCompatActivity {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
 
-                // Permission is not granted
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                        REQUEST_CODE_NOTIFICATION_PERMISSION);
+                // Show rationale if needed
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS)) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("Notification Permission Needed")
+                            .setMessage("This app needs the Notification permission to notify you about important updates.")
+                            .setPositiveButton("OK", (dialog, which) ->
+                                    ActivityCompat.requestPermissions(this,
+                                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                                            REQUEST_CODE_NOTIFICATION_PERMISSION))
+                            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                            .create()
+                            .show();
+                } else {
+                    // Request the permission directly
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                            REQUEST_CODE_NOTIFICATION_PERMISSION);
+                }
             }
         }
     }
 
-
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           @NonNull String[] permissions,
-//                                           @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (requestCode == REQUEST_CODE_READ_EXTERNAL_STORAGE) {
-//            // If request is cancelled, the result arrays are empty.
-//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                // Permission was granted
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_READ_EXTERNAL_STORAGE) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted
 //                Toast.makeText(this, "READ_EXTERNAL_STORAGE permission granted", Toast.LENGTH_SHORT).show();
-//                // You can now access external storage
-//            } else {
-//                // Permission denied
+                // You can now access external storage
+            } else {
+                // Permission denied
 //                Toast.makeText(this, "READ_EXTERNAL_STORAGE permission denied", Toast.LENGTH_SHORT).show();
-//                // Handle the case when permission is denied
-//            }
-//        }
-//    }
+                // Handle the case when permission is denied
+            }
+        } else if (requestCode == REQUEST_CODE_NOTIFICATION_PERMISSION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission was granted
+                Toast.makeText(this, "POST_NOTIFICATIONS permission granted", Toast.LENGTH_SHORT).show();
+                // You can now send notifications
+            } else {
+                // Permission denied
+                Toast.makeText(this, "POST_NOTIFICATIONS permission denied", Toast.LENGTH_SHORT).show();
+                // Handle the case when permission is denied
+            }
+        }
+    }
 
     public void navigateToFragment(Fragment fragment, boolean addToBackStack) {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -150,4 +174,3 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-

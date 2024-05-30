@@ -287,7 +287,6 @@ public class HomeFragment extends Fragment {
         editTitle.setText(reminder.getTitle());
         editDateBtn.setText("Edit expiration date" + " (" + reminder.getExpDate() + ")");
         editTimeBtn.setText("Edit time to notify" + " (" + reminder.getTime() + ")");
-//        editImagePathBtn.setText(reminder.getImagePath());
 
         // Load current image
         Bitmap bitmap = BitmapFactory.decodeFile(reminder.getImagePath());
@@ -297,58 +296,43 @@ public class HomeFragment extends Fragment {
             editImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        editDateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectDate(editDateBtn);
-            }
-        });
-
-        editTimeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                selectTime(editTimeBtn);
-            }
-        });
-
-        editImagePathBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openFileChooser();
-            }
-        });
+        editDateBtn.setOnClickListener(view -> selectDate(editDateBtn));
+        editTimeBtn.setOnClickListener(view -> selectTime(editTimeBtn));
+        editImagePathBtn.setOnClickListener(view -> openFileChooser());
 
         builder.setTitle("Edit Reminder");
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // Get updated details from input fields
-                String newTitle = editTitle.getText().toString();
-                String newExpDate = editDateBtn.getText().toString();
-                String newTime = editTimeBtn.getText().toString();
-                String newImagePath = editImagePathBtn.getText().toString();
+        builder.setPositiveButton("Save", (dialog, id) -> {
+            // Get updated details from input fields
+            String newTitle = editTitle.getText().toString().trim();
+            String newExpDate = editDateBtn.getText().toString().replace("Edit expiration date (", "").replace(")", "").trim();
+            String newTime = editTimeBtn.getText().toString().replace("Edit time to notify (", "").replace(")", "").trim();
 
-                // If a new image was selected, save it to storage and update the path
-                if (imageUri != null) {
-                    newImagePath = saveImageToStorage(imageUri);
-                }
+            // Use original values if the user didn't change them
+            newTitle = newTitle.isEmpty() ? reminder.getTitle() : newTitle;
+            newExpDate = newExpDate.isEmpty() ? reminder.getExpDate() : newExpDate;
+            newTime = newTime.isEmpty() ? reminder.getTime() : newTime;
 
-                // Update the reminder in the database
-                dbManager db = new dbManager(getContext());
-                db.updateReminder(reminder.getId(), newTitle, newExpDate, newTime, newImagePath);
-
-                // Update the reminder in the adapter and notify the change
-                reminder.setTitle(newTitle);
-                reminder.setExpDate(newExpDate);
-                reminder.setTime(newTime);
-                reminder.setImagePath(newImagePath);
-                adapter.notifyItemChanged(position);
+            String newImagePath = reminder.getImagePath();
+            // If a new image was selected, save it to storage and update the path
+            if (imageUri != null) {
+                newImagePath = saveImageToStorage(imageUri);
             }
+
+            // Update the reminder in the database
+            dbManager db = new dbManager(getContext());
+            db.updateReminder(reminder.getId(), newTitle, newExpDate, newTime, newImagePath);
+
+            // Update the reminder in the adapter and notify the change
+            reminder.setTitle(newTitle);
+            reminder.setExpDate(newExpDate);
+            reminder.setTime(newTime);
+            reminder.setImagePath(newImagePath);
+            adapter.notifyItemChanged(position);
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                adapter.notifyItemChanged(position);
-                dialog.dismiss();
-            }
+
+        builder.setNegativeButton("Cancel", (dialog, id) -> {
+            adapter.notifyItemChanged(position);
+            dialog.dismiss();
         });
 
         AlertDialog dialog = builder.create();
@@ -359,40 +343,38 @@ public class HomeFragment extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Choose Action");
         builder.setItems(new CharSequence[]{"Take Photo", "Choose from Gallery"},
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case 0:
-                                Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                if (takePicture.resolveActivity(requireActivity().getPackageManager()) != null) {
-                                    File photoFile = null;
-                                    try {
-                                        photoFile = createImageFile();
-                                    } catch (IOException ex) {
-                                        // Error occurred while creating the File
-                                        ex.printStackTrace();
-                                    }
-                                    // Continue only if the File was successfully created
-                                    if (photoFile != null) {
-                                        imageUri = FileProvider.getUriForFile(requireContext(),
-                                                "com.example.expiryalert.fileprovider",
-                                                photoFile);
-                                        takePicture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                                        startActivityForResult(takePicture, TAKE_PHOTO_REQUEST);
-                                    }
+                (dialog, which) -> {
+                    switch (which) {
+                        case 0:
+                            Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                            if (takePicture.resolveActivity(requireActivity().getPackageManager()) != null) {
+                                File photoFile = null;
+                                try {
+                                    photoFile = createImageFile();
+                                } catch (IOException ex) {
+                                    // Error occurred while creating the File
+                                    ex.printStackTrace();
                                 }
-                                break;
-                            case 1:
-                                Intent pickPhoto = new Intent(Intent.ACTION_PICK,
-                                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                                startActivityForResult(pickPhoto, PICK_IMAGE_REQUEST);
-                                break;
-                        }
+                                // Continue only if the File was successfully created
+                                if (photoFile != null) {
+                                    imageUri = FileProvider.getUriForFile(requireContext(),
+                                            "com.example.expiryalert.fileprovider",
+                                            photoFile);
+                                    takePicture.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                                    startActivityForResult(takePicture, TAKE_PHOTO_REQUEST);
+                                }
+                            }
+                            break;
+                        case 1:
+                            Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            startActivityForResult(pickPhoto, PICK_IMAGE_REQUEST);
+                            break;
                     }
                 });
         builder.show();
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

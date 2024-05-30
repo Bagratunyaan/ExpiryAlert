@@ -3,6 +3,7 @@ package com.example.expiryalert.ui.notifications;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +20,15 @@ import com.example.expiryalert.ui.login.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Locale;
+
 public class ProfileFragment extends Fragment {
     private Button signInBtn;
     private Button languageBtn;
     private Button logOutBtn;
     private TextView userEmailTextView;
-
     private static final String ARG_USER_EMAIL = "user_email";
+    private String currentLanguage = "en";
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -36,7 +39,7 @@ public class ProfileFragment extends Fragment {
 
         // Initialize views
         signInBtn = root.findViewById(R.id.sign_in_btn);
-        languageBtn = root.findViewById(R.id.change_language_btn);
+//        languageBtn = root.findViewById(R.id.change_language_btn);
         userEmailTextView = root.findViewById(R.id.user_email_text_view);
         logOutBtn = root.findViewById(R.id.logout_btn);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -66,6 +69,13 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+//        languageBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                switchLanguage();
+//            }
+//        });
+
         return root;
     }
 
@@ -90,6 +100,16 @@ public class ProfileFragment extends Fragment {
         logOutBtn.setVisibility(View.GONE);
     }
 
+    private void switchLanguage() {
+        currentLanguage = currentLanguage.equals("en") ? "ru" : "en";
+        Locale locale = new Locale(currentLanguage);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.setLocale(locale);
+        requireActivity().getResources().updateConfiguration(config, requireActivity().getResources().getDisplayMetrics());
+        requireActivity().recreate(); // Restart activity to apply changes
+    }
+
     public static ProfileFragment newInstance(String userEmail) {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
@@ -98,7 +118,3 @@ public class ProfileFragment extends Fragment {
         return fragment;
     }
 }
-
-
-
-
